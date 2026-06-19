@@ -1,0 +1,153 @@
+@model List<LeadCapture.Models.Lead>
+@{
+    ViewData["Title"] = "Başvuru Yönetimi";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="fw-bold mb-1">
+                Gelen Başvurular
+                <span id="unreadBadge" class="badge" style="font-size: 0.7rem; vertical-align: middle; background: #D946EF; display: @(Model.Any(l => !l.IsViewed) ? "inline" : "none")">
+                    @Model.Count(l => !l.IsViewed)
+                </span>
+            </h2>
+            <p class="text-white-50 small mb-0">Toplam: @Model.Count kayıt</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="/Admin/VideoSettings" class="btn btn-outline-light rounded-pill">
+                <i class="bi bi-camera-video me-1"></i>Video
+            </a>
+            <a href="/Admin/Gallery" class="btn btn-outline-light rounded-pill">
+                <i class="bi bi-images me-1"></i>Galeri
+            </a>
+            <a href="/Admin/Export?search=@ViewBag.Search" class="btn btn-casting">
+                <i class="bi bi-file-earmark-excel me-1"></i>Excel
+            </a>
+            <a href="/Admin/Logout" class="btn btn-outline-light rounded-pill">
+                <i class="bi bi-box-arrow-right me-1"></i>Çıkış
+            </a>
+        </div>
+    </div>
+
+    <form method="get" class="mb-4">
+        <div class="row g-2">
+            <div class="col-md-8">
+                <input name="search" class="form-control" placeholder="Ad, telefon, e-posta veya yetenek ile ara..." value="@ViewBag.Search" />
+            </div>
+            <div class="col-md-2">
+                <select name="sort" class="form-select">
+                    <option value="">Son eklenen</option>
+                    <option value="name" selected="@(ViewBag.Sort == "name")">Ada göre A-Z</option>
+                    <option value="name_desc" selected="@(ViewBag.Sort == "name_desc")">Ada göre Z-A</option>
+                    <option value="date" selected="@(ViewBag.Sort == "date")">Eskiden yeniye</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-outline-light w-100">
+                    <i class="bi bi-search me-1"></i>Ara
+                </button>
+            </div>
+        </div>
+    </form>
+
+    <div id="toastContainer" class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999;"></div>
+
+    @if (!Model.Any())
+    {
+        <div class="casting-card p-5 text-center">
+            <i class="bi bi-inbox" style="font-size: 3rem; color: rgba(255,255,255,0.3);"></i>
+            <p class="text-white-50 mt-2 mb-0">@(string.IsNullOrEmpty(ViewBag.Search) ? "Henüz başvuru gelmedi." : "Aramanızla eşleşen başvuru bulunamadı.")</p>
+        </div>
+    }
+    else
+    {
+        <div class="casting-card p-3">
+            <div class="table-responsive">
+                <table class="table table-dark table-striped table-hover table-borderless mb-0 align-middle">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Foto</th>
+                            <th>Ad Soyad</th>
+                            <th>Telefon</th>
+                            <th>Yaş</th>
+                            <th>Boy/Kilo</th>
+                            <th>Yetenekler</th>
+                            <th>Tarih</th>
+                            <th>Kaynak</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var lead in Model)
+                        {
+                            <tr class="@(!lead.IsViewed ? "table-active" : "")">
+                                <td class="text-white-50 small">
+                                    @lead.Id
+                                    @if (!lead.IsViewed)
+                                    {
+                                        <span class="badge bg-danger ms-1" style="font-size: 0.5rem;">yeni</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(lead.PhotoPath))
+                                    {
+                                        <a href="@lead.PhotoPath" target="_blank">
+                                            <img src="@lead.PhotoPath" alt="foto" style="width: 40px; height: 40px; object-fit: cover; border-radius: 8px;" />
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-white-50"><i class="bi bi-person-circle" style="font-size: 1.5rem;"></i></span>
+                                    }
+                                </td>
+                                <td class="fw-semibold">@lead.FullName</td>
+                                <td>@lead.Phone</td>
+                                <td class="text-white-50">@(lead.Age?.ToString() ?? "-")</td>
+                                <td class="text-white-50 small">@(lead.Height?.ToString() ?? "-") / @(lead.Weight?.ToString() ?? "-")</td>
+                                <td class="text-white-50 small" style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@(!string.IsNullOrEmpty(lead.Talents) ? lead.Talents : "-")</td>
+                                <td class="text-white-50 small">@lead.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                                <td class="text-white-50 small">@lead.Source</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script>
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/hub/leads")
+            .withAutomaticReconnect()
+            .build();
+
+        connection.on("NewLead", (lead) => {
+            const toast = document.createElement("div");
+            toast.className = "toast show align-items-center text-bg-danger border-0 mb-2";
+            toast.role = "alert";
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <strong>Yeni Başvuru!</strong><br>
+                        <small>${lead.fullName} - ${lead.phone}</small>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            `;
+            document.getElementById("toastContainer").appendChild(toast);
+            setTimeout(() => toast.remove(), 8000);
+
+            const badge = document.getElementById("unreadBadge");
+            if (badge) {
+                badge.style.display = "inline";
+                badge.textContent = parseInt(badge.textContent || "0") + 1;
+            }
+        });
+
+        connection.start().catch(err => console.error("SignalR error:", err));
+    </script>
+}

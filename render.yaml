@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: ekol-medya-lead
+    runtime: image
+    repo: https://github.com/YOUR_USERNAME/LeadCapture
+    plan: free
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production

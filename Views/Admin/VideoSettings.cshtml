@@ -1,0 +1,44 @@
+@model LeadCapture.Models.SiteSetting
+@{
+    ViewData["Title"] = "Video Ayarları";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold mb-0">Video Ayarları</h2>
+        <div class="d-flex gap-2">
+            <a href="/Admin/Index" class="btn btn-outline-light rounded-pill">
+                <i class="bi bi-list-ul me-1"></i>Başvurular
+            </a>
+            <a href="/Admin/Gallery" class="btn btn-outline-light rounded-pill">
+                <i class="bi bi-images me-1"></i>Galeri
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success bg-success bg-opacity-25 text-white border-success border-opacity-25 rounded-4">@TempData["Success"]</div>
+    }
+
+    <div class="casting-card p-4">
+        <p class="text-white-50 small mb-3">Ana sayfada gösterilecek YouTube video URL'sini girin.</p>
+        <form method="post">
+            <div class="mb-3">
+                <label class="form-label small">YouTube Video URL</label>
+                <input name="videoUrl" class="form-control" value="@Model.Value" placeholder="https://www.youtube.com/embed/..." />
+            </div>
+            <button type="submit" class="btn btn-casting">
+                <i class="bi bi-save me-1"></i>Kaydet
+            </button>
+        </form>
+        @if (!string.IsNullOrEmpty(Model.Value))
+        {
+            <hr class="border-light border-opacity-10 my-4">
+            <p class="small text-white-50 mb-2">Önizleme:</p>
+            <div class="ratio ratio-16x9">
+                <iframe src="@Model.Value" title="Video" allowfullscreen style="border: none; border-radius: 12px;"></iframe>
+            </div>
+        }
+    </div>
+</div>

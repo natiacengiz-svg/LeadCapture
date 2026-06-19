@@ -1,0 +1,107 @@
+@model List<LeadCapture.Models.SiteImage>
+@{
+    ViewData["Title"] = "Galeri Yönetimi";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold mb-0">Galeri Yönetimi</h2>
+        <div class="d-flex gap-2">
+            <a href="/Admin/Index" class="btn btn-outline-light rounded-pill">
+                <i class="bi bi-list-ul me-1"></i>Başvurular
+            </a>
+            <a href="/Admin/VideoSettings" class="btn btn-outline-light rounded-pill">
+                <i class="bi bi-camera-video me-1"></i>Video
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success bg-success bg-opacity-25 text-white border-success border-opacity-25 rounded-4">@TempData["Success"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger bg-danger bg-opacity-25 text-white border-danger border-opacity-25 rounded-4">@TempData["Error"]</div>
+    }
+
+    <div class="casting-card p-4 mb-4">
+        <h5 class="fw-semibold mb-3">Yeni Fotoğraf Yükle</h5>
+        <form method="post" enctype="multipart/form-data" action="/Admin/GalleryUpload">
+            <div class="mb-3">
+                <input type="file" name="files" class="form-control" accept="image/*" multiple />
+            </div>
+            <button type="submit" class="btn btn-casting">
+                <i class="bi bi-upload me-1"></i>Yükle
+            </button>
+        </form>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="casting-card p-5 text-center">
+            <i class="bi bi-images" style="font-size: 3rem; color: rgba(255,255,255,0.3);"></i>
+            <p class="text-white-50 mt-2 mb-0">Henüz fotoğraf yüklenmedi.</p>
+        </div>
+    }
+    else
+    {
+        <form method="post" action="/Admin/GalleryReorder" id="reorderForm">
+            <div class="casting-card p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-semibold mb-0">Yüklenen Fotoğraflar (@Model.Count)</h5>
+                    <button type="submit" class="btn btn-outline-light btn-sm rounded-pill">
+                        <i class="bi bi-arrow-up-down me-1"></i>Sıralamayı Kaydet
+                    </button>
+                </div>
+                <div class="row g-3" id="galleryGrid">
+                    @for (int i = 0; i < Model.Count; i++)
+                    {
+                        <div class="col-md-3 col-6" data-id="@Model[i].Id">
+                            <div class="position-relative">
+                                <input type="hidden" name="ids" value="@Model[i].Id" />
+                                <img src="@Model[i].FilePath" class="img-fluid rounded-3" style="width: 100%; height: 200px; object-fit: cover; cursor: grab;" />
+                                <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 rounded-circle" onclick="deleteImage(@Model[i].Id)" style="width: 32px; height: 32px;">
+                                    <i class="bi bi-x"></i>
+                                </button>
+                                <small class="text-white-50 mt-1 d-block">Sıra: @(i + 1)</small>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </form>
+    }
+</div>
+
+<form method="post" id="deleteForm" style="display:none;">
+    <input type="hidden" name="id" id="deleteId" />
+</form>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script>
+        const grid = document.getElementById('galleryGrid');
+        if (grid) {
+            new Sortable(grid, {
+                animation: 150,
+                handle: 'img',
+                onEnd: function () {
+                    const items = grid.querySelectorAll('.col-md-3');
+                    items.forEach((el, i) => {
+                        const label = el.querySelector('small');
+                        if (label) label.textContent = 'Sıra: ' + (i + 1);
+                    });
+                }
+            });
+        }
+
+        function deleteImage(id) {
+            if (confirm('Bu fotoğrafı silmek istediğinize emin misiniz?')) {
+                document.getElementById('deleteId').value = id;
+                document.getElementById('deleteForm').action = '/Admin/GalleryDelete';
+                document.getElementById('deleteForm').submit();
+            }
+        }
+    </script>
+}

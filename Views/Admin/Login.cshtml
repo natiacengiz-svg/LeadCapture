@@ -1,0 +1,32 @@
+@{
+    ViewData["Title"] = "Admin Giriş";
+    Layout = "_Layout";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-4">
+            <div class="casting-card p-4">
+                <h3 class="text-center fw-bold mb-1">Admin Paneli</h3>
+                <p class="text-white-50 text-center small mb-4">Yönetici girişi</p>
+
+                @if (ViewBag.Error != null)
+                {
+                    <div class="alert alert-danger bg-danger bg-opacity-25 text-white border-danger border-opacity-25 small">@ViewBag.Error</div>
+                }
+
+                <form method="post">
+                    <div class="mb-3">
+                        <label class="form-label text-white small">Kullanıcı Adı</label>
+                        <input name="username" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-white small">Şifre</label>
+                        <input name="password" type="password" class="form-control" required />
+                    </div>
+                    <button type="submit" class="btn btn-casting w-100">Giriş Yap</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

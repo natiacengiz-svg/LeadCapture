@@ -1,0 +1,201 @@
+﻿@model LeadCapture.Models.LeadViewModel
+@{
+    ViewData["Title"] = "Oyuncu Seçmeleri - Ekol Medya";
+    var videoUrl = ViewBag.VideoUrl as string;
+    var gallery = ViewBag.GalleryImages as List<LeadCapture.Models.SiteImage> ?? new();
+}
+
+<div class="hero-section">
+    <div class="container">
+        @if (!string.IsNullOrEmpty(videoUrl))
+        {
+            <div class="row g-4 mb-5">
+                <div class="col-12">
+                    <div class="casting-card overflow-hidden">
+                        <div class="ratio ratio-16x9">
+                            <iframe src="@videoUrl" title="Ekol Medya Cast Ajansı" allowfullscreen style="border: none;"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (gallery.Any())
+        {
+            <div class="row g-4 mb-5">
+                <div class="col-12">
+                    <div class="casting-card p-4">
+                        <h3 class="fw-bold mb-3">Galeri</h3>
+                        <div class="row g-3">
+                            @foreach (var img in gallery)
+                            {
+                                <div class="col-md-3 col-6">
+                                    <a href="@img.FilePath" target="_blank">
+                                        <img src="@img.FilePath" class="img-fluid rounded-3" style="width: 100%; height: 200px; object-fit: cover;" />
+                                    </a>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <div class="row g-5 align-items-start">
+            <div class="col-lg-6">
+                <div class="brand-text mb-3">Ekol Medya Cast Ajansı</div>
+                <h1 class="hero-title mb-4">
+                    Hayalini Kurduğun<br> Rol Seni Bekliyor!
+                </h1>
+                <p class="hero-sub mb-4">
+                    Dizi, film ve reklam oyuncu seçmelerimize katılın. 
+                    Ekol Medya ailesine siz de katılın, kariyerinize yön verin.
+                </p>
+
+                <div class="d-flex gap-4 flex-wrap mb-4">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="feature-icon"><i class="bi bi-camera-reels"></i></div>
+                        <div>
+                            <div class="fw-bold">Dizi & Film</div>
+                            <small class="text-white-50">Projelerimiz için oyuncu arıyoruz</small>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="feature-icon"><i class="bi bi-megaphone"></i></div>
+                        <div>
+                            <div class="fw-bold">Reklam</div>
+                            <small class="text-white-50">Marka yüzleri arıyoruz</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-2 text-white-50 small">
+                    <i class="bi bi-check-circle-fill" style="color: #C084FC"></i>
+                    <span>Deneyim gerekmez, herkes başvurabilir</span>
+                </div>
+                <div class="d-flex align-items-center gap-2 text-white-50 small mt-1">
+                    <i class="bi bi-check-circle-fill" style="color: #C084FC"></i>
+                    <span>18-65 yaş arası tüm adaylar değerlendirilir</span>
+                </div>
+                <div class="d-flex align-items-center gap-2 text-white-50 small mt-1">
+                    <i class="bi bi-check-circle-fill" style="color: #C084FC"></i>
+                    <span>Ücretsiz başvuru, profesyonel değerlendirme</span>
+                </div>
+
+                <div class="mt-4 pt-2 border-top" style="border-color: rgba(192,132,252,0.15) !important;">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-circle overflow-hidden" style="width: 48px; height: 48px; background: linear-gradient(135deg, #FF6B9D, #C084FC); display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-person-circle text-white" style="font-size: 1.8rem;"></i>
+                        </div>
+                        <div>
+                            <small class="text-white-50">Ekol Medya Cast Ekibi</small>
+                            <div class="fw-semibold small">"Hayallerinize bir adım uzaklıktasınız"</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success text-center bg-success bg-opacity-25 text-white border-success border-opacity-25 rounded-4">
+                        <i class="bi bi-check-circle-fill me-2"></i>@TempData["Success"]
+                    </div>
+                }
+
+                <div class="casting-card p-4">
+                    <h4 class="fw-bold mb-1">Başvuru Formu</h4>
+                    <p class="text-white-50 small mb-4">Sizi arayalım, seçmeler hakkında bilgi verelim.</p>
+
+                    <form method="post" enctype="multipart/form-data">
+                        <div asp-validation-summary="ModelOnly" class="mb-3 small"></div>
+
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label asp-for="FullName" class="form-label small"></label>
+                                <input asp-for="FullName" class="form-control" placeholder="Adınız ve Soyadınız" />
+                                <span asp-validation-for="FullName" class="small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Phone" class="form-label small"></label>
+                                <input asp-for="Phone" class="form-control" placeholder="05XX XXX XX XX" type="tel" />
+                                <span asp-validation-for="Phone" class="small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Email" class="form-label small"></label>
+                                <input asp-for="Email" class="form-control" placeholder="ornek@email.com" />
+                                <span asp-validation-for="Email" class="small"></span>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label asp-for="Age" class="form-label small"></label>
+                                <input asp-for="Age" class="form-control" placeholder="18-65" type="number" />
+                                <span asp-validation-for="Age" class="small"></span>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label asp-for="Height" class="form-label small"></label>
+                                <input asp-for="Height" class="form-control" placeholder="cm" type="number" />
+                                <span asp-validation-for="Height" class="small"></span>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label asp-for="Weight" class="form-label small"></label>
+                                <input asp-for="Weight" class="form-control" placeholder="kg" type="number" />
+                                <span asp-validation-for="Weight" class="small"></span>
+                            </div>
+
+                            <div class="col-12">
+                                <label asp-for="Talents" class="form-label small"></label>
+                                <textarea asp-for="Talents" class="form-control" rows="3" placeholder="Yeteneklerinizi kısaca anlatın (dans, şarkı, spor, yabancı dil vb.)"></textarea>
+                                <span asp-validation-for="Talents" class="small"></span>
+                            </div>
+
+                            <div class="col-12">
+                                <label asp-for="Photo" class="form-label small"></label>
+                                <input asp-for="Photo" class="form-control" accept="image/*" />
+                                <span asp-validation-for="Photo" class="small"></span>
+                            </div>
+                        </div>
+
+                        <hr class="border-light border-opacity-10 my-3">
+
+                        <div class="mb-2">
+                            <div class="form-check">
+                                <input asp-for="KvkkConsent" class="form-check-input" />
+                                <label asp-for="KvkkConsent" class="form-check-label check-label small">
+                                    <a href="#" style="color: #C084FC" data-bs-toggle="modal" data-bs-target="#kvkkModal">KVKK Aydınlatma Metni</a>'ni okudum ve kabul ediyorum.
+                                </label>
+                            </div>
+                            <span asp-validation-for="KvkkConsent" class="small"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input asp-for="MarketingConsent" class="form-check-input" />
+                                <label asp-for="MarketingConsent" class="form-check-label check-label small">
+                                    Yeni projelerden ve seçmelerden haberdar olmak için ileti almayı kabul ediyorum.
+                                </label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-casting w-100">
+                            <i class="bi bi-send-fill me-2"></i>Başvuruyu Gönder
+                        </button>
+                    </form>
+                </div>
+
+                <p class="text-center text-white-50 small mt-3">
+                    <i class="bi bi-shield-lock me-1"></i>
+                    Bilgileriniz KVKK kapsamında korunmaktadır.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
