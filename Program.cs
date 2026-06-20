@@ -8,6 +8,9 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddSignalR();
 
 var connUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+var dbConnectionString = "Data Source=leads.db";
+Action<DbContextOptionsBuilder>? dbConfig = null;
+
 if (!string.IsNullOrEmpty(connUrl))
 {
     try
@@ -17,18 +20,28 @@ if (!string.IsNullOrEmpty(connUrl))
         {
             var userInfo = uri.UserInfo.Split(':');
             var password = userInfo.Length > 1 ? userInfo[1] : "";
-            var connString = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={password};SSL Mode=Require;Trust Server Certificate=true;Timeout=30";
-            builder.Services.AddDbContext<AppDbContext>(options =>
-                options.UseNpgsql(connString));
+            var port = uri.Port > 0 ? uri.Port : 5432;
+            var database = uri.AbsolutePath.TrimStart('/');
+            dbConnectionString = $"Host={uri.Host};Port={port};Database={database};Username={userInfo[0]};Password={password};SSL Mode=Require;Trust Server Certificate=true;Timeout=5";
+            dbConfig = options => options.UseNpgsql(dbConnectionString);
         }
     }
-    catch { }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine($"[DB] Failed to parse DATABASE_URL: {ex.Message}");
+    }
 }
 
-if (!builder.Services.Any(s => s.ServiceType == typeof(AppDbContext)))
+// If Npgsql is configured, try it; fall back to SQLite if it fails
+if (dbConfig != null)
+{
+    // Register Npgsql first
+    builder.Services.AddDbContext<AppDbContext>(dbConfig);
+}
+else
 {
     builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseSqlite("Data Source=leads.db"));
+        options.UseSqlite(dbConnectionString));
 }
 
 builder.Services.AddAuthentication("CookieAuth")
@@ -67,6 +80,17 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
+
+app.MapGet("/debug", (HttpContext ctx) =>
+{
+    var lines = new List<string>
+    {
+        $"Time: {DateTime.UtcNow:O}",
+        $"Env: {Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}",
+        $"HasDbUrl: {!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DATABASE_URL"))}"
+    };
+    return string.Join("\n", lines);
+});
 
 app.MapControllerRoute(
     name: "default",
