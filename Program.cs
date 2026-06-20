@@ -17,7 +17,7 @@ if (!string.IsNullOrEmpty(connUrl))
         {
             var userInfo = uri.UserInfo.Split(':');
             var password = userInfo.Length > 1 ? userInfo[1] : "";
-            var connString = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={password};SSL Mode=Disable;Timeout=30";
+            var connString = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={password};SSL Mode=Require;Trust Server Certificate=true;Timeout=30";
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseNpgsql(connString));
         }
