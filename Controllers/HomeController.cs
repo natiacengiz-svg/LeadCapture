@@ -100,6 +100,6 @@ public class HomeController : Controller
 
     public IActionResult Error()
     {
-        return View();
+        return View(new ErrorViewModel { RequestId = System.Diagnostics.Activity.Current?.Id ?? HttpContext.TraceIdentifier });
     }
 }
