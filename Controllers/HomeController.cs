@@ -20,14 +20,24 @@ public class HomeController : Controller
 
     public async Task<IActionResult> Index()
     {
-        var videoUrl = await _db.SiteSettings
-            .Where(s => s.Key == "VideoUrl")
-            .Select(s => s.Value)
-            .FirstOrDefaultAsync();
+        string? videoUrl = null;
+        List<SiteImage> galleryImages = new();
 
-        var galleryImages = await _db.SiteImages
-            .OrderBy(i => i.SortOrder)
-            .ToListAsync();
+        try
+        {
+            videoUrl = await _db.SiteSettings
+                .Where(s => s.Key == "VideoUrl")
+                .Select(s => s.Value)
+                .FirstOrDefaultAsync();
+
+            galleryImages = await _db.SiteImages
+                .OrderBy(i => i.SortOrder)
+                .ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"DB query error in Index: {ex}");
+        }
 
         ViewBag.VideoUrl = videoUrl;
         ViewBag.GalleryImages = galleryImages;

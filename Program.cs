@@ -47,11 +47,12 @@ try
     {
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         db.Database.EnsureCreated();
+        Console.Error.WriteLine("[DB] EnsureCreated succeeded");
     }
 }
 catch (Exception ex)
 {
-    Console.WriteLine($"DB init error: {ex.Message}");
+    Console.Error.WriteLine($"[DB] EnsureCreated failed: {ex}");
 }
 
 app.UseStaticFiles();
