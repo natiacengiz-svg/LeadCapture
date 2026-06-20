@@ -10,13 +10,22 @@ builder.Services.AddSignalR();
 var connUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 if (!string.IsNullOrEmpty(connUrl))
 {
-    var uri = new Uri(connUrl);
-    var userInfo = uri.UserInfo.Split(':');
-    var connString = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
-    builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseNpgsql(connString));
+    try
+    {
+        var uri = new Uri(connUrl);
+        if (!string.IsNullOrEmpty(uri.UserInfo))
+        {
+            var userInfo = uri.UserInfo.Split(':');
+            var password = userInfo.Length > 1 ? userInfo[1] : "";
+            var connString = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={password};SSL Mode=Disable;Timeout=30";
+            builder.Services.AddDbContext<AppDbContext>(options =>
+                options.UseNpgsql(connString));
+        }
+    }
+    catch { }
 }
-else
+
+if (!builder.Services.Any(s => s.ServiceType == typeof(AppDbContext)))
 {
     builder.Services.AddDbContext<AppDbContext>(options =>
         options.UseSqlite("Data Source=leads.db"));
@@ -32,10 +41,17 @@ builder.Services.AddAuthentication("CookieAuth")
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
+try
 {
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.EnsureCreated();
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        db.Database.EnsureCreated();
+    }
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"DB init error: {ex.Message}");
 }
 
 app.UseStaticFiles();
